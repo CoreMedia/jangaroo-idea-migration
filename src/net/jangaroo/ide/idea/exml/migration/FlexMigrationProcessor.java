@@ -20,6 +20,7 @@ import com.intellij.openapi.roots.libraries.NewLibraryConfiguration;
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.ExistingLibraryEditor;
 import com.intellij.openapi.roots.ui.configuration.libraryEditor.NewLibraryEditor;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.ui.NonEmptyInputValidator;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -51,7 +52,8 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
   private static final Logger LOG = Logger.getInstance(FlexMigrationProcessor.class);
 
   private static final Pattern EXT3_LIBRARY_PATTERN = Pattern.compile("Maven: net.jangaroo:ext-as:2.0.[1-9][0-9]*(-joo)?");
-  private static final String EXT6_LIBRARY = "net.jangaroo:ext-as:6.0.1-51";
+  private static final String EXT6_DEFAULT_VERSION = "6.0.1-51";
+  private static final String EXT6_LIBRARY_WITHOUT_VERSION = "net.jangaroo:ext-as:";
   private static final String MIGRATION_MAP = "ext-as-3.4-migration-map.properties";
   private static final String REFACTORING_NAME = RefactoringBundle.message("migration.title");
 
@@ -75,17 +77,28 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
         return;
       }
 
-      ext6LibraryConfig = RepositoryAttachHandler.resolveAndDownload(myProject, EXT6_LIBRARY, false, false, null, null);
-      if (ext6LibraryConfig == null) {
-        error("Required library not found", "The library '" + EXT6_LIBRARY + "' not found in Maven repositories.");
+      String version = Messages.showInputDialog(myProject, "ExtAS 6 version", "Choose ExtAS Version",
+              Messages.getQuestionIcon(), EXT6_DEFAULT_VERSION, new NonEmptyInputValidator());
+      if (version == null) {
         return;
       }
 
-      migrationMapFile = getMigrationMapFileFromLibrary(ext6LibraryConfig);
+      String ext6Coords = EXT6_LIBRARY_WITHOUT_VERSION + version;
+      ext6LibraryConfig = RepositoryAttachHandler.resolveAndDownload(myProject, ext6Coords, false, false, null, null);
+      if (ext6LibraryConfig == null) {
+        error("Required library not found", "The library '" + ext6Coords + "' not found in Maven repositories.");
+        return;
+      }
+
+      migrationMapFile = getMigrationMapFileFromLibrary(ext6LibraryConfig, ext6Coords);
     }
 
     migrationMap = FlexMigrationMapLoader.load(myProject, migrationMapFile, migrateApi, migrateConfigClasses,
       migrateProperties);
+  }
+
+  boolean isExt6Available() {
+    return ext6LibraryConfig != null;
   }
 
   private List<Library> getLibraries(Pattern namePattern) {
@@ -106,7 +119,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
     return libraries;
   }
 
-  private static VirtualFile getMigrationMapFileFromLibrary(NewLibraryConfiguration libraryConfig) {
+  private static VirtualFile getMigrationMapFileFromLibrary(NewLibraryConfiguration libraryConfig, String ext6Coords) {
     NewLibraryEditor editor = new NewLibraryEditor(libraryConfig.getLibraryType(), libraryConfig.getProperties());
     libraryConfig.addRoots(editor);
     List<VirtualFile> roots = Arrays.asList(editor.getFiles(OrderRootType.CLASSES));
@@ -126,7 +139,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
       }
     }
     error("Migration map file not found",
-      "Ext AS migration map file '" + MIGRATION_MAP + "' not found in " + EXT6_LIBRARY);
+      "Ext AS migration map file '" + MIGRATION_MAP + "' not found in " + ext6Coords);
     return null;
   }
 

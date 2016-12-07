@@ -12,7 +12,10 @@ public class MigrateExtJsAction extends AnAction {
   public void actionPerformed(AnActionEvent anActionEvent) {
     Project myProject = getEventProject(anActionEvent);
     if (myProject != null) {
-      new FlexMigrationProcessor(myProject, true, true, false).run();
+      FlexMigrationProcessor processor = new FlexMigrationProcessor(myProject, true, true, false);
+      if (processor.isExt6Available()) {
+        processor.run();
+      }
     }
   }
 }
