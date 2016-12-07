@@ -1,0 +1,36 @@
+<idea-plugin url="https://github.com/CoreMedia/jangaroo-idea-migration" version="2">
+  <id>net.jangaroo.idea.migration</id>
+  <name>Jangaroo Migration to Ext AS 6</name>
+  <version>1.0</version>
+  <vendor url="http://www.jangaroo.net"
+          email="info@jangaroo.net">Jangaroo</vendor>
+
+  <idea-version since-build="IU-163.7743.44"/>
+
+  <depends>net.jangaroo.idea.4</depends>
+
+  <description><![CDATA[
+      Migrate ActionScript and MXML code from Ext AS 3.4 to Ext AS 6.
+    ]]></description>
+
+  <change-notes><![CDATA[
+     Initial release of the plugin.
+    ]]>
+  </change-notes>
+
+  <actions>
+    <action id="net.jangaroo.ide.idea.exml.migration.MigrateExtProperties"
+            class="net.jangaroo.ide.idea.exml.migration.MigrateExtProperties"
+            text="Migrate Ext AS Properties"
+            description="Migrate usages of Ext AS properties classes to ResourceBundles">
+      <add-to-group group-id="RefactoringMenu4" anchor="after" relative-to-action="Migrate"/>
+    </action>
+    <action id="net.jangaroo.ide.idea.exml.migration.MigrateExtJsAction"
+            class="net.jangaroo.ide.idea.exml.migration.MigrateExtJsAction"
+            text="Migrate to Ext AS _6"
+            description="Migrate ActionScript and MXML code from Ext AS 3.4 to Ext AS 6.">
+      <add-to-group group-id="RefactoringMenu4" anchor="after" relative-to-action="Migrate"/>
+    </action>
+  </actions>
+
+</idea-plugin>
