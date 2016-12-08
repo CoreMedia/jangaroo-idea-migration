@@ -32,7 +32,7 @@ import static net.jangaroo.ide.idea.exml.migration.MigrationMapEntryType.REPLACE
 /**
  * Loads the map to migrate ActionScript.
  */
-public class FlexMigrationMapLoader {
+class FlexMigrationMapLoader {
 
   private static final Logger LOG = Logger.getInstance(FlexMigrationMapLoader.class);
 

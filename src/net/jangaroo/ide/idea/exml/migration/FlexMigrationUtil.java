@@ -59,7 +59,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
-public class FlexMigrationUtil {
+class FlexMigrationUtil {
   private static final Logger LOG = Logger.getInstance("#com.intellij.refactoring.migration.MigrationUtil");
 
   private FlexMigrationUtil() {
@@ -88,7 +88,7 @@ public class FlexMigrationUtil {
     }
   }
 
-  public static Set<MigrationUsageInfo> findClassOrMemberUsages(Project project, MigrationMapEntry entry) {
+  static Set<MigrationUsageInfo> findClassOrMemberUsages(Project project, MigrationMapEntry entry) {
     String qName = entry.getOldName();
     Collection<PsiElement> psiElements = findClassesOrMembers(project, qName);
     if (psiElements.isEmpty()) {
@@ -100,12 +100,12 @@ public class FlexMigrationUtil {
     return findRefs(project, psiElements, entry);
   }
 
-  public static PsiElement findClassOrMember(Project project, String qName) {
+  private static PsiElement findClassOrMember(Project project, String qName) {
     Collection<PsiElement> collection = findClassesOrMembers(project, qName);
     return collection.isEmpty() ? null : collection.iterator().next();
   }
 
-  public static Collection<PsiElement> findClassesOrMembers(Project project, String qName) {
+  private static Collection<PsiElement> findClassesOrMembers(Project project, String qName) {
     String[] parts = qName.split("#", 2);
     String className = parts[0];
     String member = parts.length == 2 ? parts[1] : null;
@@ -125,7 +125,7 @@ public class FlexMigrationUtil {
     return result;
   }
 
-  public static JSFunction findMember(JSClass aClass, String member, JSFunction.FunctionKind functionKind) {
+  private static JSFunction findMember(JSClass aClass, String member, JSFunction.FunctionKind functionKind) {
     while (aClass != null) {
       JSFunction method = functionKind == null
         ? aClass.findFunctionByName(member)
@@ -195,8 +195,8 @@ public class FlexMigrationUtil {
     return null;
   }
 
-  public static void doClassMigration(Project project,
-                                      MigrationMapEntry migrationMapEntry, Collection<MigrationUsageInfo> usages) {
+  static void doClassMigration(Project project,
+                               MigrationMapEntry migrationMapEntry, Collection<MigrationUsageInfo> usages) {
     String oldQName = migrationMapEntry.getOldName();
     String newQName = migrationMapEntry.getNewName();
     try {
@@ -277,8 +277,7 @@ public class FlexMigrationUtil {
         }
 
       }
-    }
-    catch (IncorrectOperationException e) {
+    } catch (IncorrectOperationException e) {
       // should not happen!
       LOG.error(e);
     }
@@ -468,7 +467,9 @@ public class FlexMigrationUtil {
       JSParameterListElement parameter = i < parameters.length ? parameters[i] : null;
       JSParameterListElement referenceParameter = i < referenceParameters.length ? referenceParameters[i] : null;
       if (referenceParameter == null) {
-        assert parameter != null;
+        if (parameter == null) {
+          throw new AssertionError("parameter is null");
+        }
         parameter.delete();
       } else if (parameter == null) {
         JSParameterList parameterList = functionToMigrate.getParameterList();

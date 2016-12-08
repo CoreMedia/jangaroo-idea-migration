@@ -37,7 +37,6 @@ import org.jetbrains.idea.maven.utils.library.RepositoryAttachHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -62,8 +61,8 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
   private SortedMap<String, MigrationMapEntry> migrationMap = new TreeMap<>();
   private Map<Library, ListMultimap<OrderRootType, String>> originalRoots = ImmutableMap.of();
 
-  public FlexMigrationProcessor(Project project, boolean migrateApi, boolean migrateConfigClasses,
-                                boolean migrateProperties) {
+  FlexMigrationProcessor(Project project, boolean migrateApi, boolean migrateConfigClasses,
+                         boolean migrateProperties) {
     super(project);
     initialize(migrateApi, migrateConfigClasses, migrateProperties);
   }
@@ -205,30 +204,14 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
         libraryEditor.removeAllRoots();
         ext6LibraryConfig.addRoots(libraryEditor);
         DumbService.getInstance(myProject).runWhenSmart(
-          new Runnable() {
-            @Override
-            public void run() {
-              ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                @Override
-                public void run() {
-                  libraryEditor.commit();
-                }
-              });
-            }
-          }
+                () -> ApplicationManager.getApplication().runWriteAction(libraryEditor::commit)
         );
         LOG.info("Replaced library roots of " + extLibrary);
       }
     }
 
     // execute the actual migration as soon as Idea has completed "Indexing" after library change
-    DumbService.getInstance(myProject).runWhenSmart(
-      new Runnable() {
-        @Override
-        public void run() {
-          FlexMigrationProcessor.super.execute(usages);
-        }
-      }
+    DumbService.getInstance(myProject).runWhenSmart(() -> FlexMigrationProcessor.super.execute(usages)
     );
   }
 
@@ -271,7 +254,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
     // migrate import usages first, hoping this avoids unnecessary fully-qualified names
     Collection<UsageInfo> usages1 = usagesInFile.getUsages();
     ArrayList<MigrationUsageInfo> usages = Lists.newArrayList(Iterables.filter(usages1, MigrationUsageInfo.class));
-    Collections.sort(usages, ImportUsageFirstComparator.INSTANCE);
+    usages.sort(ImportUsageFirstComparator.INSTANCE);
 
     for (MigrationMapEntry entry : migrationMap.values()) {
       FlexMigrationUtil.doClassMigration(myProject, entry, usages);
@@ -289,12 +272,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
       for (Map.Entry<OrderRootType, String> root : roots.entries()) {
         editor.addRoot(root.getValue(), root.getKey());
       }
-      ApplicationManager.getApplication().runWriteAction(new Runnable() {
-        @Override
-        public void run() {
-          editor.commit();
-        }
-      });
+      ApplicationManager.getApplication().runWriteAction(editor::commit);
       LOG.info("Restored library roots of " + library + " with " + roots);
     }
   }

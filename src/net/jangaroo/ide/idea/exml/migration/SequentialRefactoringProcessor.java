@@ -1,6 +1,5 @@
 package net.jangaroo.ide.idea.exml.migration;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimaps;
@@ -37,7 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -57,7 +55,7 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
 
   private RefactoringTransaction myTransaction;
 
-  protected SequentialRefactoringProcessor(@NotNull Project project) {
+  SequentialRefactoringProcessor(@NotNull Project project) {
     super(project);
   }
 
@@ -83,14 +81,11 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
   }
 
   protected void execute(@NotNull final UsageInfo[] usages) {
-    CommandProcessor.getInstance().executeCommand(myProject, new Runnable() {
-      @Override
-      public void run() {
-        Collection<UsageInfo> usageInfos = new LinkedHashSet<>(Arrays.asList(usages));
-        doRefactoring(usageInfos);
-        if (isGlobalUndoAction()) {
-          CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject);
-        }
+    CommandProcessor.getInstance().executeCommand(myProject, () -> {
+      Collection<UsageInfo> usageInfos = new LinkedHashSet<>(Arrays.asList(usages));
+      doRefactoring(usageInfos);
+      if (isGlobalUndoAction()) {
+        CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject);
       }
     }, getCommandName(), null, getUndoConfirmationPolicy());
   }
@@ -136,41 +131,30 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
     progressWindow.setText("Migrating");
     final ModalityState modalityState = ModalityState.current();
 
-    Runnable runnable = new Runnable() {
-      @Override
-      public void run() {
-        final Runnable writeRunnable = new Runnable() {
-          @Override
-          public void run() {
-            CommandProcessor.getInstance().executeCommand(myProject, new Runnable() {
-              @Override
-              public void run() {
-                CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject);
-                try {
-                  SequentialModalProgressTask progressTask = new SequentialModalProgressTask(myProject, getCommandName());
-                  progressTask.setMinIterationTime(100);
-                  SequentialRefactoringTask refactoringTask = new SequentialRefactoringTask(progressTask, usagesInFiles);
-                  progressTask.setTask(refactoringTask);
-                  PsiMigration psiMigration = PsiMigrationManager.getInstance(myProject).startMigration();
-                  try {
-                    ProgressManager.getInstance().run(progressTask);
-                  } finally {
-                    psiMigration.finish();
-                  }
-                  StatusBarUtil.setStatusBarInfo(myProject,
-                    RefactoringBundle.message("statusBar.refactoring.result", writableUsageInfos.length));
-                } catch (IndexNotReadyException ignored) {
-                } finally {
-                  endRefactoring();
-                }
-              }
-            }, getCommandName(), null);
+    Runnable runnable = () -> {
+      final Runnable writeRunnable = () -> CommandProcessor.getInstance().executeCommand(myProject, () -> {
+        CommandProcessor.getInstance().markCurrentCommandAsGlobal(myProject);
+        try {
+          SequentialModalProgressTask progressTask = new SequentialModalProgressTask(myProject, getCommandName());
+          progressTask.setMinIterationTime(100);
+          SequentialRefactoringTask refactoringTask = new SequentialRefactoringTask(progressTask, usagesInFiles);
+          progressTask.setTask(refactoringTask);
+          PsiMigration psiMigration = PsiMigrationManager.getInstance(myProject).startMigration();
+          try {
+            ProgressManager.getInstance().run(progressTask);
+          } finally {
+            psiMigration.finish();
           }
-        };
+          StatusBarUtil.setStatusBarInfo(myProject,
+            RefactoringBundle.message("statusBar.refactoring.result", writableUsageInfos.length));
+        } catch (IndexNotReadyException ignored) {
+        } finally {
+          endRefactoring();
+        }
+      }, getCommandName(), null);
 
 
-        ApplicationManager.getApplication().invokeLater(writeRunnable, modalityState, myProject.getDisposed());
-      }
+      ApplicationManager.getApplication().invokeLater(writeRunnable, modalityState, myProject.getDisposed());
     };
 
     ApplicationManager.getApplication().executeOnPooledThread(runnable);
@@ -180,16 +164,11 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
   private List<UsagesInFile> getUsagesInFiles(UsageInfo[] writableUsageInfos) {
     final List<UsagesInFile> usagesInFiles = new ArrayList<>();
     ImmutableMap<PsiFile, Collection<UsageInfo>> usageInfosByFile = Multimaps.index(
-      ImmutableList.copyOf(writableUsageInfos), new Function<UsageInfo, PsiFile>() {
-        @Override
-        public PsiFile apply(UsageInfo usageInfo) {
-          return usageInfo.getFile();
-        }
-      }).asMap();
+      ImmutableList.copyOf(writableUsageInfos), UsageInfo::getFile).asMap();
     for (Map.Entry<PsiFile, Collection<UsageInfo>> entry : usageInfosByFile.entrySet()) {
       usagesInFiles.add(new UsagesInFile(entry.getKey(), entry.getValue()));
     }
-    Collections.sort(usagesInFiles, getRefactoringIterationComparator());
+    usagesInFiles.sort(getRefactoringIterationComparator());
     return usagesInFiles;
   }
 
@@ -209,7 +188,7 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
     private int processed;
     private boolean stop;
 
-    public SequentialRefactoringTask(SequentialModalProgressTask compositeTask, List<UsagesInFile> usagesInFileList) {
+    SequentialRefactoringTask(SequentialModalProgressTask compositeTask, List<UsagesInFile> usagesInFileList) {
       this.compositeTask = compositeTask;
       this.usagesInFileList = usagesInFileList;
     }
@@ -236,14 +215,9 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
 
       String displayFileName = ProjectUtil.calcRelativeToProjectPath(file.getVirtualFile(), myProject);
       LOG.info("Processing " + displayFileName + " (" + usages.size() + " usages)");
-      updateIndicatorText("Processing...", displayFileName);
+      updateIndicatorText(displayFileName);
       updateIndicatorFraction(processed);
-      ApplicationManager.getApplication().runWriteAction(new Runnable() {
-        @Override
-        public void run() {
-          performRefactoringIteration(usagesInFile);
-        }
-      });
+      ApplicationManager.getApplication().runWriteAction(() -> performRefactoringIteration(usagesInFile));
 
       ++processed;
       return !isDone();
@@ -256,10 +230,10 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
       }
     }
 
-    private void updateIndicatorText(@NotNull String upperLabel, @NotNull String downLabel) {
+    private void updateIndicatorText(@NotNull String downLabel) {
       ProgressIndicator indicator = compositeTask.getIndicator();
       if (indicator != null) {
-        indicator.setText(upperLabel);
+        indicator.setText("Processing...");
         indicator.setText2(downLabel);
       }
     }
@@ -270,20 +244,20 @@ public abstract class SequentialRefactoringProcessor extends BaseRefactoringProc
     }
   }
 
-  protected static class UsagesInFile {
+  static class UsagesInFile {
     private final PsiFile file;
     private final Collection<UsageInfo> usages;
 
-    public UsagesInFile(PsiFile file, Collection<UsageInfo> usages) {
+    UsagesInFile(PsiFile file, Collection<UsageInfo> usages) {
       this.file = file;
       this.usages = usages;
     }
 
-    public PsiFile getFile() {
+    PsiFile getFile() {
       return file;
     }
 
-    public Collection<UsageInfo> getUsages() {
+    Collection<UsageInfo> getUsages() {
       return usages;
     }
   }

@@ -26,8 +26,4 @@ class FlexMigrationUsagesViewDescriptor implements UsageViewDescriptor {
     return null;
   }
 
-  public String getInfo() {
-    return RefactoringBundle.message("press.the.do.migrate.button", "Ext AS");
-  }
-
 }

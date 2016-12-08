@@ -12,19 +12,19 @@ class MigrationMapEntry {
     this.entryType = entryType;
   }
 
-  public String getOldName() {
+  String getOldName() {
     return oldName;
   }
 
-  public String getNewName() {
+  String getNewName() {
     return newName;
   }
 
-  public boolean isMappingOfConfigClass() {
+  boolean isMappingOfConfigClass() {
     return entryType == MigrationMapEntryType.CONFIG_CLASS;
   }
 
-  public boolean isMappingOfPropertiesClass() {
+  boolean isMappingOfPropertiesClass() {
     return entryType == MigrationMapEntryType.PROPERTIES_CLASS;
   }
 

@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 
 /**
- * Migrate usages of ActionScript properties classes to ResourceManaer resource bundles.
+ * Migrate usages of ActionScript properties classes to ResourceManager resource bundles.
  */
 public class MigrateExtProperties extends AnAction {
   @Override
