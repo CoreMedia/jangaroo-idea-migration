@@ -46,12 +46,12 @@ var foo:Foo = new Foo(fooConfig);
 0. Make EXML target classes that have the same name as the EXML file a baseClass of the EXML class
     
     ```
-    mvn net.jangaroo:exml-maven-plugin:2.1-SNAPSHOT:exml-target-to-base
+    mvn net.jangaroo:exml-maven-plugin:2.0.18:exml-target-to-base
     ```
 0. Rename EXML files to MXML files
 
    ```
-   mvn net.jangaroo:exml-maven-plugin:2.1-SNAPSHOT:convert-to-mxml -DrenameOnly
+   mvn net.jangaroo:exml-maven-plugin:2.0.18:convert-to-mxml -DrenameOnly
    ```
 0. Create a separate Git commit
 
@@ -68,8 +68,8 @@ var foo:Foo = new Foo(fooConfig);
    Make sure to adapt the path for -DextAsJar to the correct absolute path.
    
    ```
-   mvn dependency:get -Dartifact=net.jangaroo:ext-as:6.0.1-51
-   mvn net.jangaroo:exml-maven-plugin:2.1-SNAPSHOT:convert-to-mxml -DalreadyRenamed -DextAsJar=/home/user/.m2/repository/net/jangaroo/ext-as/6.0.1-51/ext-as-6.0.1-51.jar
+   mvn dependency:get -Dartifact=net.jangaroo:ext-as:6.2.0-6
+   mvn net.jangaroo:exml-maven-plugin:2.0.18:convert-to-mxml -DalreadyRenamed -DextAsJar=/home/user/.m2/repository/net/jangaroo/ext-as/6.2.0-6/ext-as-6.2.0-6.jar
    ```
    
 0. Use jangaroo-idea-migration IDEA Plugin to migrate API
@@ -79,7 +79,7 @@ var foo:Foo = new Foo(fooConfig);
    * Open module in IDEA having "Jangaroo 4" and this plugin installed.
    * Maven Reimport
    * Select "Refactor | Migrate to Ext AS 6..."
-   * Enter the version of ext-as (as in the previous step), e.g. 6.0.1-51
+   * Enter the version of ext-as (as in the previous step), e.g. 6.2.0-6
    * Usages of changed API elements will be displayed
    * Click "Do refactor"
    * Afterwards, check if messages "REPEAT the refactoring" show up in IDEA's event log. If so, repeat with "Refactor | Migrate to Ext AS 6..." until no such messages show up anymore.
