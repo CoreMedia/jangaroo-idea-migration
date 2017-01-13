@@ -101,6 +101,6 @@ var foo:Foo = new Foo(fooConfig);
 0. Optimize Imports in AS and MXML Files
 
   * Install the IDEA Plugin "Optimize Imports For Scope" (https://plugins.jetbrains.com/plugin/8188)
-  * Choose "Code|Optimize Imports for Scope/File Mask...", choose File Mask "*.as,*.mxml"
+  * Choose "Code|Optimize Imports for Scope/File Mask...", choose File Mask "\*.as,\*.mxml"
 
 0. Commit the changes and start to fix remaining problems manually
