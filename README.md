@@ -1,4 +1,4 @@
-# jangaroo-idea-migration
+# Jangaroo Migration to Ext AS 6
 
 The IntelliJ IDEA Plugin "Jangaroo Migration to Ext AS 6" provides menu items to help you migrate a Jangaroo 2 Ext AS 3.4 application to Jangaroo 4 FlExt AS 6.
 
