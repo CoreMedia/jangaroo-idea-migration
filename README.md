@@ -16,4 +16,4 @@ https://www.jetbrains.com/help/idea/installing-updating-and-uninstalling-reposit
 
 ## Usage
 
-The whole migration process, including usage of this IDEA plugin, is documented on the Jangaroo Tool Wiki page ["Migrating your Jangaroo 2 Application to Jangaroo 4"](/CoreMedia/jangaroo-tools/wiki/Migrate-Jangaroo-2-to-4).
+The whole migration process, including usage of this IDEA plugin, is documented on the Jangaroo Tool Wiki page ["Migrating your Jangaroo 2 Application to Jangaroo 4"](//github.com/CoreMedia/jangaroo-tools/wiki/Migrate-Jangaroo-2-to-4).
