@@ -37,6 +37,7 @@ import org.jetbrains.idea.maven.utils.library.RepositoryAttachHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -51,7 +52,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
   private static final Logger LOG = Logger.getInstance(FlexMigrationProcessor.class);
 
   private static final Pattern EXT3_LIBRARY_PATTERN = Pattern.compile("Maven: net.jangaroo:ext-as:2.0.[1-9][0-9]*(-joo)?");
-  private static final String EXT6_DEFAULT_VERSION = "6.0.1-51";
+  private static final String EXT6_DEFAULT_VERSION = "6.2.0-6";
   private static final String EXT6_LIBRARY_WITHOUT_VERSION = "net.jangaroo:ext-as:";
   private static final String MIGRATION_MAP = "ext-as-3.4-migration-map.properties";
   private static final String REFACTORING_NAME = RefactoringBundle.message("migration.title");
@@ -83,7 +84,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
       }
 
       String ext6Coords = EXT6_LIBRARY_WITHOUT_VERSION + version;
-      ext6LibraryConfig = RepositoryAttachHandler.resolveAndDownload(myProject, ext6Coords, false, false, null, null);
+      ext6LibraryConfig = RepositoryAttachHandler.resolveAndDownload(myProject, ext6Coords, false, false, null, Collections.emptyList());
       if (ext6LibraryConfig == null) {
         error("Required library not found", "The library '" + ext6Coords + "' not found in Maven repositories.");
         return;
@@ -165,7 +166,7 @@ class FlexMigrationProcessor extends SequentialRefactoringProcessor {
       }
       return allUsages.toArray(new UsageInfo[allUsages.size()]);
     } finally {
-      migration.finish();
+      ApplicationManager.getApplication().invokeLater(migration::finish);
     }
   }
 
