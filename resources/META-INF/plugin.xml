@@ -1,7 +1,7 @@
 <idea-plugin url="https://github.com/CoreMedia/jangaroo-idea-migration" version="2">
   <id>net.jangaroo.idea.migration</id>
   <name>Jangaroo Migration to Ext AS 6</name>
-  <version>1.0</version>
+  <version>1.1</version>
   <vendor url="http://www.jangaroo.net"
           email="info@jangaroo.net">Jangaroo</vendor>
 
